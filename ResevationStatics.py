@@ -29,7 +29,7 @@ BASE_URL = config_data.get("BASE_URL") or os.environ.get("BASE_URL", "")
 API_PATH = config_data.get("API_PATH") or os.environ.get("API_PATH", "")
 
 
-VENUE_IDS = [5]
+VENUE_IDS = [1, 2, 3, 4, 5, 6, 15]
 
 
 STATUS_MAP = {1: "可预约", 2: "不开放/已过期", 3: "未支付锁定", 4: "已售/已满"}
