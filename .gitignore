@@ -1,2 +1,5 @@
 .env
 .archive
+ref.md
+*.pem
+__pycache__

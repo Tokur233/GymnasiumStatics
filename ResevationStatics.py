@@ -65,7 +65,7 @@ def get_data(site_id: int, date_str: str) -> Optional[Dict[str, Any]]:
         "cgAuthorization": CG_AUTH,
         "Cookie": COOKIE,
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-        "Referer": f"https://cgyy.qd.sdu.edu.cn/venue/venue-reservation/{site_id}",
+        "Referer": f"{BASE_URL}/{site_id}",
     }
 
     try:
@@ -206,7 +206,12 @@ def main() -> None:
         )
 
         df_combined = df_combined.drop(columns=["sort_time"])
-
+        df_combined["booked"] = (
+            pd.to_numeric(df_combined["booked"], errors="coerce").fillna(0).astype(int)
+        )
+        df_combined["total"] = (
+            pd.to_numeric(df_combined["total"], errors="coerce").fillna(1).astype(int)
+        )
         df_combined.to_csv(file_path, mode="w", index=False, encoding="utf_8_sig")
         print(
             f"\n[DONE] Global sorted and saved total {len(df_combined)} records to {file_path}."
