@@ -29,6 +29,7 @@ jobs:
       - name: Run Scraper
         env:
           CONFIG: ${{ secrets.CONFIG }}
+          WEATHER_CONFIG: ${{ secrets.WEATHER_CONFIG }}
         run: python ResevationStatics.py
 
       
