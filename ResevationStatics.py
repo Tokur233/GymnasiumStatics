@@ -13,7 +13,9 @@ from dotenv import load_dotenv
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-load_dotenv()
+load_dotenv(override=True)
+os.makedirs("data", exist_ok=True)
+
 config_str = os.environ.get("CONFIG", "{}")
 try:
     config_data = json.loads(config_str)
@@ -92,6 +94,21 @@ def main() -> None:
 
     results = []
     scrape_time = now_utc8.strftime("%Y-%m-%d %H:%M:%S")
+    weather_config_str = os.environ.get("WEATHER_CONFIG", "{}")
+    from weather import get_weather, get_air_quality
+
+    weather_config = json.loads(weather_config_str)
+    # print(f"Loaded weather configuration: {weather_config}")
+    api_host = weather_config.get("API_HOST")
+    private_key = weather_config.get("PRIVATE_KEY")
+    kid = weather_config.get("JWT_KID")
+    project_id = weather_config.get("PROJECT_ID")
+    location = weather_config.get("location")
+
+    weather_data = get_weather(api_host, private_key, kid, project_id, location) or {}
+    air_quality_data = (
+        get_air_quality(api_host, private_key, kid, project_id, location) or {}
+    )
 
     for vid in VENUE_IDS:
         for date in [today, tomorrow]:
@@ -166,6 +183,12 @@ def main() -> None:
                                 "total": total_capacity,
                                 "status": status_text,
                                 "remark": remark,
+                                "condition": weather_data.get("condition", ""),
+                                "feels_like": weather_data.get("feels_like", ""),
+                                "wind_scale": weather_data.get("wind_scale", ""),
+                                "precip": weather_data.get("precipitation", "0.0"),
+                                "humidity": weather_data.get("humidity", ""),
+                                "aqi": air_quality_data.get("aqi", ""),
                             })
                 print("Parsed Successfully")
             else:
@@ -176,7 +199,9 @@ def main() -> None:
 
     if results:
         df_new = pd.DataFrame(results)
-        file_path = "gym_data.csv"
+
+        current_date = now_utc8.strftime("%Y-%m-%d")
+        file_path = f"data/gym_data_{current_date}.csv"
 
         if os.path.exists(file_path):
             try:

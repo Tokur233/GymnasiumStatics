@@ -2,3 +2,5 @@ requests
 pandas
 python-dotenv
 urllib3
+PyJWT
+cryptography
