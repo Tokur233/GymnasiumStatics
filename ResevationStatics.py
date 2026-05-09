@@ -184,6 +184,7 @@ def main() -> None:
                                 "status": status_text,
                                 "remark": remark,
                                 "condition": weather_data.get("condition", ""),
+                                "temperature": weather_data.get("temperature", ""),
                                 "feels_like": weather_data.get("feels_like", ""),
                                 "wind_scale": weather_data.get("wind_scale", ""),
                                 "precip": weather_data.get("precipitation", "0.0"),
