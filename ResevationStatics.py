@@ -98,7 +98,7 @@ def main() -> None:
     from weather import get_weather, get_air_quality
 
     weather_config = json.loads(weather_config_str)
-    # print(f"Loaded weather configuration: {weather_config}")
+
     api_host = weather_config.get("API_HOST")
     private_key = weather_config.get("PRIVATE_KEY")
     kid = weather_config.get("JWT_KID")
@@ -145,26 +145,6 @@ def main() -> None:
                             isinstance(slot_data, dict)
                             and "reservationStatus" in slot_data
                         ):
-                            start_time = slot_data.get("startDate", "").split(" ")[-1]
-                            end_time = slot_data.get("endDate", "").split(" ")[-1]
-
-                            booked_num = slot_data.get("alreadyNum")
-                            if booked_num is None:
-                                booked_num = slot_data.get("useNum", 0)
-
-                            remark_parts = []
-                            if slot_data.get("adminTake") is True and slot_data.get(
-                                "adminRemark"
-                            ):
-                                remark_parts.append(slot_data.get("adminRemark"))
-
-                            if slot_data.get("takeUp") is True and slot_data.get(
-                                "takeUpExplain"
-                            ):
-                                remark_parts.append(slot_data.get("takeUpExplain"))
-
-                            remark = " | ".join(remark_parts)
-
                             status_code = slot_data.get("reservationStatus")
                             status_key = (
                                 int(status_code) if status_code is not None else -1
@@ -172,6 +152,41 @@ def main() -> None:
                             status_text = STATUS_MAP.get(
                                 status_key, f"未知({status_code})"
                             )
+
+                            block_texts = []
+
+                            if slot_data.get("takeUpExplain"):
+                                block_texts.append(
+                                    str(slot_data.get("takeUpExplain")).strip()
+                                )
+
+                            if slot_data.get("adminRemark"):
+                                block_texts.append(
+                                    str(slot_data.get("adminRemark")).strip()
+                                )
+
+                            if (
+                                status_key == 4
+                                and not slot_data.get("adminRemark")
+                                and not slot_data.get("takeUpExplain")
+                            ):
+                                if total_capacity == 1:
+                                    block_texts.append("已售")
+
+                            if status_key == 1:
+                                order_fee = slot_data.get("orderFee")
+                                fee_str = (
+                                    f"￥{order_fee}" if order_fee is not None else "￥0"
+                                )
+                                block_texts.append(fee_str)
+
+                            block_text = " | ".join(block_texts)
+
+                            start_time = slot_data.get("startDate", "").split(" ")[-1]
+                            end_time = slot_data.get("endDate", "").split(" ")[-1]
+                            booked_num = slot_data.get("alreadyNum")
+                            if booked_num is None:
+                                booked_num = slot_data.get("useNum", 0)
 
                             results.append({
                                 "scrape_time": scrape_time,
@@ -182,7 +197,7 @@ def main() -> None:
                                 "booked": booked_num,
                                 "total": total_capacity,
                                 "status": status_text,
-                                "remark": remark,
+                                "remark": block_text,
                                 "condition": weather_data.get("condition", ""),
                                 "temperature": weather_data.get("temperature", ""),
                                 "feels_like": weather_data.get("feels_like", ""),
