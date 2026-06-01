@@ -5,3 +5,5 @@ ref.md
 __pycache__
 reverse_project
 *.ps1
+*.txt
+*.svg

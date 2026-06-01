@@ -53,7 +53,6 @@ def generate_sign(path: str, params: Dict[str, Any], timestamp: str) -> str:
     sign_str += str(timestamp) + " " + SALT
     return hashlib.md5(sign_str.encode("utf-8")).hexdigest()
 
-
 def get_data(site_id: int, date_str: str) -> Optional[Dict[str, Any]]:
 
     ts = str(int(time.time() * 1000))

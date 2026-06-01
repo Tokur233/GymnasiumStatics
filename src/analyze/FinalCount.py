@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
-import matplotlib.dates as mdates
 
 current_file_dir = Path(__file__).resolve().parent
 project_root = current_file_dir.parent.parent
