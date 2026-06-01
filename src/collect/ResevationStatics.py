@@ -217,7 +217,7 @@ def main() -> None:
         df_new = pd.DataFrame(results)
 
         current_date = now_utc8.strftime("%Y-%m-%d")
-        file_path = f"data/gym_data_{current_date}.csv"
+        file_path = f"../../data/gym_data_{current_date}.csv"
 
         if os.path.exists(file_path):
             try:
