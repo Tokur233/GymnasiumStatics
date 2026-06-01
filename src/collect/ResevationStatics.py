@@ -4,17 +4,22 @@ import time
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Any, Dict
 import json
+from pathlib import Path
 import pandas as pd
 import requests
 import urllib3
 from dotenv import load_dotenv
 
+# 路径配置
+current_file_dir = Path(__file__).resolve().parent
+project_root = current_file_dir.parent.parent
+data_dir = project_root / "data"
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 load_dotenv(override=True)
-os.makedirs("data", exist_ok=True)
+data_dir.mkdir(parents=True, exist_ok=True)
 
 config_str = os.environ.get("CONFIG", "{}")
 try:
@@ -217,19 +222,19 @@ def main() -> None:
         df_new = pd.DataFrame(results)
 
         current_date = now_utc8.strftime("%Y-%m-%d")
-        file_path = f"data/gym_data_{current_date}.csv"
+        file_path = data_dir / f"gym_data_{current_date}.csv"
 
-        if os.path.exists(file_path):
+        if file_path.exists():
             try:
                 df_old = pd.read_csv(file_path)
                 df_combined = pd.concat([df_old, df_new], ignore_index=True)
             except pd.errors.ParserError:
-                backup_path = file_path.replace(
-                    ".csv", f"_backup_{int(time.time())}.csv"
+                backup_path = file_path.with_name(
+                    f"{file_path.stem}_backup_{int(time.time())}.csv"
                 )
-                os.rename(file_path, backup_path)
+                file_path.rename(backup_path)
                 print(
-                    f"\n[WARNING] 发现旧版数据格式冲突，已将原文件备份为: {backup_path}"
+                    f"\n[WARNING] Found old data format conflict. Original file backed up to: {backup_path}"
                 )
                 df_combined = df_new
         else:

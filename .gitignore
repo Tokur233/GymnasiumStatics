@@ -4,3 +4,4 @@ ref.md
 *.pem
 __pycache__
 reverse_project
+*.ps1
