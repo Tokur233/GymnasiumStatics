@@ -13,7 +13,6 @@ try:
 except:
     pass
 
-
 def analyze_and_plot_lifecycle():
     current_file_dir = Path(__file__).resolve().parent
     project_root = current_file_dir.parent.parent
@@ -70,9 +69,6 @@ def analyze_and_plot_lifecycle():
         })
 
     df_results = pd.DataFrame(results)
-
-   
-   
    
     summary = (
         df_results
@@ -81,6 +77,7 @@ def analyze_and_plot_lifecycle():
             half_life_hours=("half_life_hours", "mean"),
             full_load_hours=("full_load_hours", "mean"),
             total_days=("date", "count"),
+            half_load_days=("half_life_hours", "count"), 
             full_load_days=("full_load_hours", "count"),
         )
         .reset_index()
@@ -89,24 +86,29 @@ def analyze_and_plot_lifecycle():
     summary["second_half_duration"] = (
         summary["full_load_hours"] - summary["half_life_hours"]
     )
+   
+    summary["half_load_rate"] = (
+        summary["half_load_days"] / summary["total_days"]
+    ) * 100
 
     summary["full_load_rate"] = (
         summary["full_load_days"] / summary["total_days"]
     ) * 100
 
-   
     summary = summary.sort_values(by="time_range", ascending=False).round(2)
 
     slots = summary["time_range"].tolist()
     half_life = summary["half_life_hours"].tolist()
     remainder = summary["second_half_duration"].tolist()
     rates = summary["full_load_rate"].tolist()
+    half_rates = summary["half_load_rate"].round(1).tolist() 
 
     print("\n[INFO] Calculation complete. Previewing summary:")
    
     print_cols = [
         "time_range",
         "half_life_hours",
+        "half_load_rate", 
         "full_load_hours",
         "second_half_duration",
         "full_load_rate",
@@ -136,39 +138,51 @@ def analyze_and_plot_lifecycle():
         height=0.6,
         edgecolor="white",
     )
+   
+    for i, (h, r, rate, h_rate) in enumerate(
+        zip(half_life, remainder, rates, half_rates)
+    ):
+       
+        if not np.isnan(h):
+           
+            y_pos_h = i + 0.35 if h < 3 else i
+            font_color_h = "black" if h < 3 else "white"
+            text_str_h = (
+                f"{h}h ({h_rate}%)" if h < 3 else f"{h}h\n({h_rate}%)"
+            ) 
 
-   
-   
-   
-    for i, (h, r, rate) in enumerate(zip(half_life, remainder, rates)):
-        ax.text(
-            h / 2,
-            i,
-            f"{h}h",
-            va="center",
-            ha="center",
-            color="white",
-            fontweight="bold",
-            fontsize=10,
-        )
-
+            ax.text(
+                h / 2 + 1.2,
+                y_pos_h,
+                text_str_h,
+                va="center",
+                ha="center",
+                color=font_color_h,
+                fontweight="bold",
+                fontsize=9, 
+            )
+       
         if not np.isnan(r):
+           
+            y_pos_r = i + 0.35 if r < 3 else i
+            text_str_r = f"{r}h ({rate}%)" if r < 3 else f"{r}h\n({rate}%)"
+
             ax.text(
                 h + r / 2,
-                i,
-                f"{r}h",
+                y_pos_r,
+                text_str_r,
                 va="center",
                 ha="center",
                 color="black",
                 fontweight="bold",
-                fontsize=10,
+                fontsize=9,
             )
 
            
             ax.text(
-                h + r + 1,
+                h + r + 1, 
                 i,
-                f"Full load ({round(h + r, 1)}h) | Rate: {rate}%",
+                f"Full load ({round(h + r, 1)}h)",
                 va="center",
                 ha="left",
                 color="#666666",
@@ -176,8 +190,10 @@ def analyze_and_plot_lifecycle():
                 style="italic",
             )
         else:
+           
+            offset_x = h + 1 if not np.isnan(h) else 1
             ax.text(
-                h + 1,
+                offset_x,
                 i,
                 f"Not full loaded | Rate: {rate}%",
                 va="center",
@@ -201,7 +217,6 @@ def analyze_and_plot_lifecycle():
     )
     ax.set_ylabel("Time Slot", fontsize=12)
 
-   
     ax.set_xlim(0, 48)
 
     ax.xaxis.grid(True, linestyle="--", alpha=0.4)
@@ -227,7 +242,6 @@ def analyze_and_plot_lifecycle():
     print(
         f"[INFO] Lifecycle charts generated.\nSVG path: {svg_path}\nPNG path: {png_path}"
     )
-
 
 if __name__ == "__main__":
     analyze_and_plot_lifecycle()
