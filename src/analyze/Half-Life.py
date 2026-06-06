@@ -149,7 +149,7 @@ def analyze_and_plot_lifecycle():
             text_str_h = f"{h}h ({h_rate}%)" if h < 3 else f"{h}h\n({h_rate}%)"
 
             ax.text(
-                h / 2 + 1.2,
+                h / 2 + 1.3,
                 y_pos_h,
                 text_str_h,
                 va="center",
