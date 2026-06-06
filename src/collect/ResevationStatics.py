@@ -1,6 +1,7 @@
 import hashlib
 import os
 import time
+import sys
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Any, Dict
 import json
@@ -52,6 +53,7 @@ def generate_sign(path: str, params: Dict[str, Any], timestamp: str) -> str:
                 sign_str += str(key) + str(val)
     sign_str += str(timestamp) + " " + SALT
     return hashlib.md5(sign_str.encode("utf-8")).hexdigest()
+
 
 def get_data(site_id: int, date_str: str) -> Optional[Dict[str, Any]]:
 
@@ -214,6 +216,11 @@ def main() -> None:
             else:
                 msg = json_data.get("message") if json_data else "No Response"
                 print(f"Skipped: {msg}")
+                if json_data and (
+                    "Token已失效" in msg or json_data.get("code") in [401, 403]
+                ):
+                    print(f"\n [ERROR] {msg}")
+                    sys.exit(1)
 
             time.sleep(1.2)
 
